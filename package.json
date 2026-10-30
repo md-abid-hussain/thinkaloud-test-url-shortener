@@ -1,0 +1,10 @@
+{
+  "name": "url-shortener",
+  "version": "1.0.0",
+  "description": "A URL shortener for the Coding Challenges URL shortener challenge.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT"
+}
