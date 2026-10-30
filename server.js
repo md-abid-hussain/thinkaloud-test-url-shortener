@@ -1,4 +1,4 @@
-// A URL shortener: POST / creates a short key, GET /<key> redirects. Links are stored in a file so they survive restarts.
+// A URL shortener: POST / creates a short key, GET /<key> redirects, DELETE /<key> removes it. Links are stored in a file so they survive restarts.
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const http = require("node:http");
@@ -81,6 +81,14 @@ const server = http.createServer(async (req, res) => {
     // 302, not 301: browsers would cache a permanent redirect and never ask again, so a later change or delete would be ignored.
     res.writeHead(302, { Location: target });
     return res.end();
+  }
+  if (req.method === "DELETE" && key) {
+    // Deleting a key that isn't there changes nothing, so a retried DELETE is safe and still succeeds.
+    if (links[key]) {
+      delete links[key];
+      save();
+    }
+    return send(res, 200, "");
   }
   return send(res, 404, "Not found");
 });
