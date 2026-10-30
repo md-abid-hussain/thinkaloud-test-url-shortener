@@ -1,4 +1,4 @@
-// A URL shortener. Step 1: POST / creates a short key for a long URL, stored in a file so it survives restarts.
+// A URL shortener: POST / creates a short key, GET /<key> redirects. Links are stored in a file so they survive restarts.
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const http = require("node:http");
@@ -74,6 +74,14 @@ const server = http.createServer(async (req, res) => {
   const path = new URL(req.url, BASE_URL).pathname;
   if (req.method === "POST" && path === "/") return create(req, res);
   if (req.method === "GET" && path === "/") return send(res, 200, "URL shortener is running\n");
+  const key = path.slice(1);
+  if (req.method === "GET" && key) {
+    const target = links[key];
+    if (!target) return send(res, 404, "URL not found");
+    // 302, not 301: browsers would cache a permanent redirect and never ask again, so a later change or delete would be ignored.
+    res.writeHead(302, { Location: target });
+    return res.end();
+  }
   return send(res, 404, "Not found");
 });
 
